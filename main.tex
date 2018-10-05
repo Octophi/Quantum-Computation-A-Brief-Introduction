@@ -1,0 +1,511 @@
+\documentclass[a4paper]{article}
+
+\usepackage{qcircuit}
+
+\newcommand\0{\mathbf{0}}
+\newcommand\bb{\mathbf{b}}
+\newcommand\ee{\mathbf{e}}
+\newcommand\pp{\mathbf{p}}
+\newcommand\vv{\mathbf{v}}
+\newcommand\ww{\mathbf{w}}
+\newcommand\xx{\mathbf{x}}
+\newcommand\yy{\mathbf{y}}
+\newcommand\zz{\mathbf{z}}
+\newcommand\CC{\mathbb{C}}
+\newcommand\FF{\mathbb{F}}
+\newcommand\RR{\mathbb{R}}
+\newcommand\ZZ{\mathbb{Z}}
+\newcommand\Cb{\mathbf{C}}
+\newcommand\Nb{\mathbf{N}}
+\newcommand\Ec{\mathcal{E}}
+\newcommand\Mc{\mathcal{M}}
+\newcommand\Pc{\mathcal{P}}
+\newcommand\Vc{\mathcal{V}}
+\newcommand\GL{\mathit{GL}}
+
+%redefined math symbols taking no arguments
+\newcommand\<{\langle}
+\renewcommand\>{\rangle}
+\renewcommand\iff{\Leftrightarrow}
+
+%% Language and font encodings
+\usepackage[english]{babel}
+\usepackage[utf8x]{inputenc}
+\usepackage[T1]{fontenc}
+
+%% Sets page size and margins
+\usepackage[a4paper,top=3cm,bottom=2cm,left=3cm,right=3cm,marginparwidth=1.75cm]{geometry}
+
+%% Useful packages
+\usepackage{amsmath, amsthm, amssymb}
+\usepackage{graphicx}
+\usepackage[colorinlistoftodos]{todonotes}
+\usepackage[colorlinks=true, allcolors=blue]{hyperref}
+
+\title{Quantum Computation: A Brief Introduction}
+\author{Joey Li}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Quantum computation is a relatively new field of study that seeks to design ``quantum computers,'' which utilize properties of quantum mechanics to solve problems that classical computer have found intractable. One of the most famous results in quantum computing is Shor's Algorithm, which showed that a theoretical quantum computer could factor large numbers in polynomial time. This was a huge improvement over the best known classical methods, which take exponential time. This paper attempts to provide a coherent mathematical introduction to quantum computation up through Shor's algorithm.
+\end{abstract}
+
+\section{Qubits: The Building Blocks of Quantum Computers}
+
+\subsection{What is a Qubit?}
+
+Classical computing is built on the \textbf{bit}, a single 0 or 1, and is able to execute a wide array of tasks based on instructions encoded in long strings of on/off states. The analogue for quantum computers is the \textbf{qubit}, which, by contrast, is a \textit{complex linear combination} of 0 and 1.
+
+More precisely, a qubit is a vector $\vv$ in the complex inner product space $\CC^2$, and so if we take the standard basis vectors 
+$$\ee_0 = \begin{bmatrix}1 \\ 0\end{bmatrix} \qquad \ee_1 = \begin{bmatrix} 0 \\ 1\end{bmatrix}$$
+then we may write $\vv = c_0\ee_0+c_1\ee_1$ for some $c_0,c_1\in \CC$. The subscripts on the basis vectors are intended to evoke a comparison to the bits 0 and 1; the qubit analogue of 0 is $\ee_0$ and the qubit analogue of 1 is $\ee_1$. 
+
+\subsection{Measuring a Qubit}
+
+While the qubit exists as some complex linear combination of ``0'' and ``1,'' whenever we want to know its value, we must \textbf{measure} it. When we do so, the qubit collapses to either $\ee_0$ or $\ee_1$. The probability that $\vv = c_0\ee_0+c_1\ee_1$ collapses to $\ee_i$ is equal to $$\frac{|c_i|^2}{|c_0|^2+|c_1|^2}.$$
+Notice that the absolute values are necessary because the coefficients we are dealing with are complex. Moreover, notice that functionally, the qubits $\vv$ and $c\vv$ behave the same when we measure them. Therefore, we generally assume that qubits are unit vectors in $\CC^2$. 
+
+This notion of measurement presents a useful way to think of the coefficients  when we write  $$\vv=\begin{bmatrix}c_0\\c_1\end{bmatrix}$$ in the standard basis: the coefficients are amplitudes, which give us a  sense of the probability that the vector is in some given state. This agrees with our notion that $$\ee_0 =\begin{bmatrix}1 \\ 0\end{bmatrix} \text{ and } \ee_1 =\begin{bmatrix}0\\ 1\end{bmatrix},$$ since the probability of measuring a ``0'' would be precisely 1 for an original vector of ``0'' and likewise for ``1.''
+
+An important point about measurements is that we never  learn the original probabilities of a qubit when we measure it. For reasons known only to physicists, the coefficients not corresponding to the value we observe in our measurement are destroyed after we measure the qubit.
+
+While we will not need to measure qubits against other operators in the course of this paper, it is worth noting that the idea of measurement generalizes to bases other than the standard basis $\{\ee_0,\ee_1\}$. In general, we can pick any Hermitian operator $T$ and measure the qubit against the basis vectors $(\ee_0)_T, (\ee_1)_T$, and the probability that the qubit collapses to $(\ee_i)_T$ is given by the same relation as above, except the coordinates must be in terms of this basis induced by $T$. 
+
+\subsection{Interactions Between Qubits}
+
+Just as in the classical case, doing significant computations requires the ability to manipulate many qubits. However, because qubits are complex linear combinations of 0 and 1, they interact with each other in a more nuanced way than simple concatenation. 
+
+A system of $n$ qubits corresponds to a vector 
+$$\ww \in \underbrace{\CC^2\otimes \dots\otimes \CC^2}_{n \text{ times}}.$$ Because this state exists in the tensor product of multiple spaces, there exist systems of $n$ qubits that do not correspond to pure tensors, which we call \textbf{entangled}. A common example is the so-called singlet state:
+$$\psi = \frac{1}{\sqrt{2}} (\ee_0\otimes \ee_1 - \ee_1\otimes \ee_0). $$
+We call $\psi$ entangled because the value of the second qubit is inherently linked to the value of the first. Quantum mechanics allows us to measure the first qubit in this state just as we would have in a one-qubit situation; however, notice that measuring the first qubit automatically tells us the state of the second qubit! Thus, there is no way to describe the states of the two qubits independently.
+
+\textbf{Note}: From here on, we will use $\ee_{00}$ to denote $\ee_{0}\otimes\ee_0$, $\ee_{110}$ to denote $\ee_{1}\otimes\ee_{1}\otimes\ee_0$, and so on. This is a more useful notation because it is terser and alludes to the natural correspondence between $\ee_{00}$ and the classical bit-string $00$. Additionally, it is a sensible replacement because $\ee_{00}$ is indeed a basis vector since $\{\ee_0\otimes\ee_0, \ee_0\otimes\ee_1, \ee_1\otimes\ee_0, \ee_1\otimes\ee_1\}$ is a natural basis for $\CC^2\otimes\CC^2$ and likewise for larger systems of qubits. As an additional abuse of notation, we will often use $\vv$ to denote a system of some number of qubits rather than a single qubit - context should make it clear what $\vv$ should be.
+
+\section{Quantum Circuits}
+
+As with classical computing, the next step is understanding how circuits operate on qubits.
+
+\subsection{Classical Reversible Logic}
+
+The main classical logic gates are NOT, OR, AND, and COPY, which we can display in pictures such as below.
+
+$$\begin{array}{c}
+\Qcircuit @C=1em @R=.7em {
+\lstick 1 & \multigate{1}{AND} & \rstick 1 \qw \\
+\lstick 1 & \ghost{AND} & \\
+}
+\end{array}$$
+A fundamental theorem of classical logic is that the functions NOT, AND, OR, and COPY are sufficient to implement any function $f:\{0,1\}^n \to \{0,1\}$. In fact, because of DeMorgan's Law, we don't need OR. 
+
+In quantum computing, because of physics reasons, we need every logic gate to be \textbf{reversible}: it must have the same number of inputs and outputs. Thus, it is not immediately obvious that quantum computers can implement everything that classical computers can, since the only reversible gate out of the four major classical gates is NOT. 
+
+Thus, we need a new definition for how reversible gates may implement a boolean function. We say a set of gates can \textbf{simulate} a boolean function $f(x_1,\ldots,x_n)$ if they can be used to construct a circuit which takes in as inputs $x_1,\ldots,x_n$ along with (potentially) some extra bits called \textbf{ancilla bits} and output $f(x_1,\ldots,x_n)$ along with (potentially) some extra bits called \textbf{garbage bits}.
+
+One important reversible classical gate is the controlled-not, or CNOT gate. It behaves as below:
+
+$$\begin{array}{c}
+\Qcircuit @C=1em @R=.7em {
+\lstick {x} & \ctrl{1} & \rstick{x}  \qw \\
+\lstick {y} & \targ & \rstick{(x+y) \text{ mod 2}}  \qw \\
+}
+\end{array}$$
+The top bit fed into the CNOT gate serves as the control: if it is a zero, the gate does nothing, and if it is a one, the gate will perform a NOT operation on the second bit. Clearly the CNOT gate can simulate the NOT gate if we let the top input be 1. 
+
+Another important reversible classical gate is the Toffoli gate, also sometimes called the CCNOT gate. The appropriate picture is below:
+$$\begin{array}{c}
+\Qcircuit @C=1em @R=.7em {
+\lstick {x} & \ctrl{2} & \rstick{x}  \qw \\
+\lstick {y} & \ctrl{1} & \rstick{y}  \qw \\
+\lstick {z} & \targ & \rstick{z+xy \text{ mod 2}} \qw 
+}
+\end{array}$$
+The Toffoli gate is the CNOT gate but with another control. It outputs the same bits as it inputs unless both of the control bits are 1, in which case a NOT is applied to the third bit. It is significant because we can simulate every Boolean function with some number of Toffoli gates. To see this, notice that we may implement AND with the setup 
+$$\begin{array}{c}
+\Qcircuit @C=1em @R=.7em {
+\lstick {x} & \ctrl{2} & \rstick{x}  \qw \\
+\lstick {y} & \ctrl{1} & \rstick{y}  \qw \\
+\lstick {0} & \targ & \rstick{xy} \qw 
+}
+\end{array}$$
+and NOT with the setup
+$$\begin{array}{c}
+\Qcircuit @C=1em @R=.7em {
+\lstick {1} & \ctrl{2} & \rstick{1}  \qw \\
+\lstick {z} & \ctrl{1} & \rstick{z}  \qw \\
+\lstick {1} & \targ & \rstick{1+z \text{ mod 2}} \qw 
+}
+\end{array}$$
+Since NOT and AND are sufficient to implement any boolean function, we can  simulate any boolean function using reversible gates as long as we allow for some extra ancilla bits and garbage bits.
+
+\subsection{Quantum Gates}
+
+It is crucial that reversible gates can simulate any boolean function because quantum logic gates are unitary matrices. Moreover, any reversible gate can be represented by a unitary matrix\footnote{See \cite{brun} for details.}, and therefore, quantum logic gates can simulate any boolean function.
+
+Because they are unitary matrices, quantum gates are defined by how they operate on the basis elements. Their behavior agrees with our intuition when the inputs are basis vectors. For example, an application of a quantum CNOT gate might look like 
+$$\begin{array}{c}
+\Qcircuit @C=1em @R=.7em {
+\lstick {\ee_1} & \ctrl{1} & \rstick{\ee_1}  \qw \\
+\lstick {\ee_0} & \targ & \rstick{\ee_1}  \qw \\
+}
+\end{array}$$
+as expected. However, more interesting results arise when we input qubits that are not so simple. For example, when we apply the CNOT gate to $\frac{1}{\sqrt{2}} (\ee_0-\ee_1)\otimes \ee_1$, we obtain
+
+\begin{align*}
+U_{CNOT}\left(\frac{1}{\sqrt{2}} (\ee_0-\ee_1)\otimes \ee_1\right) &= \frac{1}{\sqrt{2}}U_{CNOT}\left(\ee_{01}-\ee_{11}\right) \\
+&= \frac{1}{\sqrt{2}}\left(\ee_{01}-\ee_{10}\right)
+\end{align*}
+However, this output is the singlet state! Therefore, even simple setups can cause our bits to become entangled.
+
+Another interesting phenomenon occurs when we introduce the \textbf{Hadamard gate}, one of the most ubiquitous quantum gates. The Hadamard gate acts on one qubit and is given by the matrix $$H=\begin{bmatrix}
+\frac{1}{\sqrt{2}} & \frac{1}{\sqrt{2}} \\
+\frac{1}{\sqrt{2}} & -\frac{1}{\sqrt{2}}
+\end{bmatrix}.$$
+Notice that $H\ee_0 = \frac{1}{\sqrt{2}}(\ee_0+\ee_1)$. This fact will come up repeatedly for reasons that will soon be clear.
+
+Now consider the circuit shown:
+
+$$\begin{array}{c}
+\Qcircuit @C=1em @R=.7em {
+ & \gate{H} & \ctrl{1} & \gate{H}  & \qw \\
+ & \gate{H} & \targ & \gate{H} & \qw \\
+}
+\end{array}$$
+If we input $\ee_{00}$, we see that the Hadamard gates will take this state to $\frac{1}{\sqrt{2}}(\ee_0+\ee_1)\otimes \frac{1}{\sqrt{2}}(\ee_0+\ee_1)$. Then applying $U_{CNOT}$, we obtain 
+\begin{align*}
+U_{CNOT}\left(\frac{1}{2}(\ee_{00}+\ee_{01}+\ee_{10}+\ee_{11})\right) &= \frac{1}{2}(\ee_{00}+\ee_{01}+\ee_{10}+\ee_{11}) \\
+&= \frac{1}{\sqrt{2}}(\ee_0+\ee_1)\otimes \frac{1}{\sqrt{2}}(\ee_0+\ee_1).
+\end{align*}
+Applying the Hadamard transforms, we obtain $\ee_{00}$ as our output.
+
+If we were to compute the corresponding outputs for the inputs $\ee_{01}, \ee_{10},$ and $\ee_{11}$, we would obtain $\ee_{11}$, $\ee_{10}$, and $\ee_{01}$, respectively. Since these are the basis elements on two qubits, this determines the unitary matrix uniquely, and in particular, we see that the circuit is actually equivalent to 
+
+\begin{figure}[h]
+\centering
+\mbox{
+\Qcircuit @C=1em @R=.7em {
+\lstick {\vv} & \targ & \rstick{\vv\oplus\ww}  \qw \\
+\lstick {\ww} & \ctrl{-1} & \rstick{\ww}  \qw \\
+}
+}
+\end{figure}
+\textbf{Note}: The $\oplus$ should be thought of as the classical XOR operation applied to qubits in the natural way.
+
+This should be surprising, because the Hadamard gates ended up switching which qubit was the control. This phenomenon occurs frequently and is termed ``phase kickback.'' Thus, as we have seen, quantum circuits can behave in ways that are very unintuitive. 
+
+One final word before we move on: because quantum gates are reversible while many functions we would like to implement do not have the same number of inputs as outputs, we frequently make the use of ancilla bits and garbage bits in our circuits. Thus, when simulating a function $f$, rather than inputting just one string of qubits into our circuit, we often input two so that our circuit looks like 
+$$\begin{array}{c}
+\Qcircuit @C=1em @R=.7em {
+\lstick \xx & \multigate{1}{U_f} & \rstick \xx \qw \\
+\lstick \yy & \ghost{U_f} & \rstick{\yy\oplus f(\xx)} \qw\\
+}
+\end{array}$$
+where $\xx$ and $\yy$ should generally be thought of as systems of qubits. When reading this, it should be understood that $\yy$ consists of precisely as many ancilla bits as we need to match the number of bits in $f(\xx)$, and the real input and output of this circuit are still $\xx$ and $f(\xx)$, respectively.
+
+\section{Deutsch-Jozsa Algorithm}
+
+So far we have seen some interesting results with basic quantum circuits, but nothing particularly groundbreaking. In this section, we explore the Deutsch-Jozsa algorithm, which was one of the first quantum algorithms discovered to provide a significant speedup over classical techniques.  
+
+The problem is as follows: suppose we are given a function $f:\{0,1\}^n \to \{0,1\}$ in a black box. We know that the function falls under one of two categories:
+\begin{itemize}
+\item \textbf{constant}: We either have $f(x)=0$ for all $x$ or $f(x)=1$ for all $x$
+\item \textbf{balanced}: $f$ takes exactly half of its inputs to $0$ and half of its inputs to $1$.
+\end{itemize}
+We want to determine, with certainty, what kind of function $f$ is in as few calls as possible. Using classical algorithms, the worst case requires us to input roughly half the numbers, as we could imagine that we could call the function for up to half the inputs and receive all $0$'s without gaining any information on whether the function was constant or balanced. Thus, in the classical worst case, the runtime is roughly $O(2^{n=1})$. We will show that using quantum algorithms, we only need to call the function once.
+
+\newpage
+
+Suppose our function $f$ is given in a unitary gate so that we have the following circuit: 
+
+\begin{figure}[h]
+\centering
+\mbox{
+\Qcircuit @C=1em @R=.7em {
+\lstick {\vv} & \multigate{1}{U_f} & \rstick {\vv} \qw \\
+\lstick \ww & \ghost{U_f} & \rstick{\ww\oplus f(\vv)} \qw\\
+}
+}
+\end{figure}
+
+Then we claim we may determine whether $f$ is balanced or constant by using the following circuit, where the meter on the top branch indicates that we should measure that output and $H^{\otimes n}$ is a gate applying the Hadamard gate to each of the $n$ qubits in the system inputted.
+
+\begin{figure}[h]
+\centering
+\mbox{
+\Qcircuit @C=1em @R=.7em {
+\lstick {\ee_{0\dots 0}} & \gate{H^{\otimes n}} & \multigate{1}{U_f} & \gate{H^{\otimes n}} & \meter  \\
+\lstick{\ee_1} & \gate{H} & \ghost{U_f} & \qw & \\
+}
+}
+\end{figure}
+
+Notice that whenever a Hadamard transform is performed on one of the basis elements $\ee_j$ for $j\in\{0,1\}$ , we obtain 
+\begin{align*}
+H(\ee_j) &= \frac{1}{\sqrt{2}}(\ee_0+(-1)^j\ee_1) \\
+&= \frac{1}{\sqrt{2}} \sum_{b\in\{0,1\}} (-1)^{jb} \ee_b
+\end{align*}
+When we apply $H^{\otimes 2}$ to one of the basis elements $\ee_x$ for $x=x_1x_2\in\{0,1\}^2$, we obtain
+\begin{align*}
+(H\otimes H)(\ee_{x_1}\otimes\ee_{x_2}) &= \left( \frac{1}{\sqrt{2}} \sum_{y_1\in\{0,1\}} (-1)^{x_1y_1} \ee_{y_1} \right) \left( \frac{1}{\sqrt{2}} \sum_{y_2\in\{0,1\}} (-1)^{x_2y_2} \ee_{y_2} \right) \\
+&= \frac{1}{2} \sum_{y\in\{0,1\}^2} (-1)^{x_1y_1+x_2y_2}\ee_{y}.
+\end{align*}
+Generalizing, we obtain 
+\begin{align*}
+H^{\otimes n}(\ee_x) = \frac{1}{2^{n/2}} \sum_{y\in\{0,1\}^n} (-1)^{x_1y_1+\dots+x_ny_n}\ee_y.
+\end{align*}
+
+Returning to the algorithm, we see that after the Hadamard transforms, the input to the function $f$ is of the form
+$$\left( \frac{1}{2^{n/2}} \sum_{y\in\{0,1\}^{n}} \ee_y \right)\left(\frac{1}{\sqrt{2}}(\ee_0-\ee_1)\right)$$ since each of the $x_i$ is $0$ for our given input.
+Then notice that applying $U_f$ to an arbitrary $\ee_y\otimes\left(\frac{1}{\sqrt{2}} (\ee_0-\ee_1)\right)$ for $y\in\{0,1\}^n$ gives 
+\begin{align*}
+\ee_y\otimes\left(\frac{1}{\sqrt{2}} (\ee_{0+f(\ee_y)} - \ee_{1+f(\ee_y)})\right) &=  \ee_y \otimes \left( \frac{1}{\sqrt{2}} (-1)^{f(\ee_y)} (\ee_0-\ee_1)\right) \\
+&= (-1)^{f(\ee_y)} \ee_y \otimes \left( \frac{1}{\sqrt{2}} (\ee_0-\ee_1)\right)
+\end{align*}
+since the $f(\ee_y)$ at most introduces a sign change. Notably, the second input to the circuit experiences no change. Then applying $U_f$ to $$\left( \frac{1}{2^{n/2}} \sum_{y\in\{0,1\}^{n}} \ee_y \right)\left(\frac{1}{\sqrt{2}}(\ee_0-\ee_1)\right)$$ 
+gives $$\left( \frac{1}{2^{n/2}} \sum_{y\in\{0,1\}^{n}} (-1)^{f(\ee_y)}\ee_y \right)\left(\frac{1}{\sqrt{2}}(\ee_0-\ee_1)\right).$$
+We may discard the last qubit because it is irrelevant. Applying the Hadamard transform to the top $n$ qubits, we get the output
+$$\left( \frac{1}{2^{n/2}} \sum_{y\in\{0,1\}^{n}} (-1)^{f(\ee_y)}\left( \frac{1}{2^{n/2}} \sum_{z\in \{0,1\}^n} (-1)^{y_1z_1+\dots+y_nz_n} \ee_z \right) \right) $$
+which equals 
+$$\frac{1}{2^n}\left(\sum_{z\in\{0,1\}^n}\sum_{y\in\{0,1\}^n} (-1)^{y_1z_1+\dots+y_nz_n + f(\ee_y)} \ee_z \right). $$ 
+This is an intimidating expression, but it turns out we only need the probability that we measure $\ee_{0\dots 0}$. Simplifying by using that each of the $z_i$ is zero for $z=0\dots 0$, the coefficient on $\ee_{0\dots 0}$ is $$\sum_{y\in\{0,1\}^n} (-1)^{f(\ee_y)},$$ which is equal to 0 if $f$ is balanced and $\pm 2^n$ if $f$ is constant. Then accounting for the factor of $\frac{1}{2^n}$ outside the sum, we see that the probability of measuring $\ee_{0\dots 0}$ is precisely equal to 1 if $f$ is constant and 0 if $f$ is balanced. Therefore, this measurement determines $f$ completely; we only need one call to the gate $U_f$ to determine whether $f$ is constant or balanced, as desired.
+
+\subsection{Reflections on Deutsch Jozsa}
+
+The practical implications of the Deutsch Jozsa algorithm are not especially impressive. First, the problem it solves is somewhat contrived. Second, while it is exponentially faster than the worst case for a classical deterministic algorithm, the speedup is less impressive when compared with classical probabilistic algorithms. For example, for large $n$ an algorithm that inputted a small number of different strings and then guessed the type of the function based on the results would be generally quite accurate, by Bayes's formula. 
+
+Yet the Deutsch Jozsa algorithm is significant because it was the first quantum algorithm that provided a theoretical exponential speedup over classical techniques. The main strategy of applying a $H^{\otimes n}$ gate to a system of qubits $\ee_{0\dots 0}$ to obtain a sum of all basis vectors on $n$ qubits is an extremely common technique in quantum algorithms, and also features in later, more famous algorithms, including Shor's algorithm. 
+
+It should be noted that the strategy of inputting a sum of all basis vectors on $n$ qubits is what is often informally referred to as ``trying all possibilities in parallel.'' In reality, this is somewhat misleading. The quantum computer does not perform faster merely because it runs many copies of the same classical algorithm simultaneously; it works because it uses specific algorithms designed to extract a property which we can measure across all the states. 
+
+\section{Phase Estimation and the Quantum Fourier Transform}
+
+The phase estimation problem is an interesting problem of general use within quantum computation. The statement of the problem is as follows: Begin by noting that any unitary matrix $U$ has eigenvalues $\lambda$ that satisfy $|\lambda| = 1$, and so the eigenvalues are of the form $e^{2\pi i\theta}$ for $0\le\theta < 1$. Then suppose we are given a circuit that can implement $U$ and a unit vector $\vv$ which is guaranteed to be an eigenvector of $U$. How can we determine $\theta$ for the eigenvalue associated with $\vv$? In solving this problem, we will introduce the quantum Fourier transform.
+
+For any unitary $U$, we may define a gate $\Lambda_m(U)$ with inputs of $m$ qubits, along with some vector $\varphi$, such that $$\Lambda_m(U)(k\otimes \varphi) = k\otimes U^k\varphi$$ for all $k\in\{0,\ldots,2^m-1\}.$ This is not always efficiently implementable, but for the sake of this discussion, assume that we have been given $\Lambda_m(U)$.
+
+We claim we can use a circuit as below in order to determine $\theta$ for a given $\vv$, if we implement the missing gate correctly. The function that the missing gate should perform will be made clear as we explain the function of the overall circuit.
+
+\begin{figure}[h]
+\centering
+\mbox{
+\Qcircuit @C=1em @R=.7em {
+\lstick {\ee_{0\dots 0}} & \gate{H^{\otimes m}} & \multigate{1}{\Lambda_{m}(U)} & \gate{?} & \meter  \\
+\lstick{\vv}  & \qw & \ghost{\Lambda_{m}(U)} & \qw & \\
+}
+}
+\end{figure}
+The input to the $\Lambda_{m}(U)$ gate will be $$\frac{1}{2^{m/2}}\left(\sum_{k\in\{0,1\}^m} \ee_k \right)\otimes \vv$$ and then the output will be 
+\begin{align*}
+\frac{1}{2^{m/2}} \sum_{k\in\{0,1\}^m} \ee_k \otimes U^k\vv &= \frac{1}{2^{m/2}} \sum_{k\in\{0,1\}^m} \ee_k\otimes e^{2\pi i\theta k}\vv \\
+&= \left(\frac{1}{2^{m/2}} \sum_{k\in\{0,1\}^m} e^{2\pi i\theta k} \ee_k \right)\otimes \vv
+\end{align*}
+\textbf{Note}: We are using a slight abuse of notation here: $k$ denotes an $m$-bit string, but the $k$ in the exponential above should be the number obtained from interpreting $k$ in binary. We will continue to use this notation throughout the rest of this paper for simplicity.
+
+Now we want to transform the first $m$ qubits to something that we may measure in order to determine the value of $\theta$. We may consider first solving this first for the special case where $\theta = \frac{j}{2^m}$ for some integer $j\in\{0,\ldots,2^m-1\}$. Then simplifying, we obtain $$\frac{1}{2^{m/2}}\sum_{k\in\{0,1\}^m} e^{2\pi i\frac{jk}{2^m}}\ee_k = \frac{1}{2^{m/2}} \sum_{k\in\{0,1\}^m} \omega^{jk}\ee_k$$
+for $\omega = e^{\frac{2i\pi}{2^m}}$. We want to be able to distinguish between different values of $j$. If we let $$w_j = \frac{1}{2^{m/2}} \sum_{k\in\{0,1\}^m} \omega^{jk}\ee_k,$$ we claim that we may distinguish between the $w_j$ reliably. This is because they are orthonormal. To see this, note that 
+\begin{align*}
+\< w_{j'}, w_j\> &= \frac{1}{2^m} \sum_{k\in\{0,1\}^m}\omega^{-j'k}\omega^{jk} \\
+&= \frac{1}{2^m} \sum_{k\in\{0,1\}^m} (\omega^{j-j'})^k \\
+&= \frac{1}{2^m} \frac{(\omega^{j-j'})^{2^{m}}-1}{\omega^{j-j'}-1}\\
+&= \begin{cases}
+    1, & \text{if } j'=j.\\
+    0, & \text{otherwise}.
+  \end{cases}
+\end{align*} 
+using the formula for the sum of a geometric series. 
+
+Then since the states are orthonormal, there exists a unitary matrix with $U\ee_j = w_j$ for each $j$, namely the one with these states as column vectors: $$ U_{QFT} = \frac{1}{2^{m/2}}\begin{bmatrix}
+1 & 1 & 1 & \dots & 1 \\
+1 & \omega & \omega^2 & \dots & \omega^{2^{m}-1}  \\
+1 & \omega^2 & \omega^4 & \dots & \omega^{2\cdot (2^m-1)} \\
+\vdots & \vdots & \vdots & \ddots & \vdots \\
+1 & \omega^{2^m-1} & \omega^{2\cdot (2^m-1)} & \dots & \omega^{(2^m-1)(2^m-1)}
+\end{bmatrix}.$$
+We call this the quantum Fourier transform (QFT). We may also write the QFT as an operation on basis elements for convenience: 
+$$QFT_{2^m}(\ee_j)= \sum_{k\in\{0,1\}^m} e^{2\pi ijk/2^m} \ee_k.$$
+Then we see that the inverse of the QFT, which we may easily compute since the $QFT$ is unitary, is the missing gate that we want to use when we solve for the special case $\theta = \frac{j}{2^m}$. Thus, for the special case, we obtain the circuit 
+
+\begin{figure}[h]
+\centering
+\mbox{
+\Qcircuit @C=1em @R=.7em {
+\lstick {\ee_{0\dots 0}} & \gate{H^{\otimes m}} & \multigate{1}{\Lambda_{m}(U)} & \gate{(QFT_{2^m})^{-1}} & \meter  \\
+\lstick{\vv}  & \qw & \ghost{\Lambda_{m}(U)} & \qw\\
+}
+}
+\end{figure}
+
+In fact,  we claim that the above circuit which we derived for the special case will also be reasonably accurate for the general case. Notice that a general input to the inverse of the quantum Fourier transform will be of the form $$\frac{1}{2^{m/2}} \sum_{k\in\{0,1\}^m} e^{2\pi i \theta k}\ee_k.$$ Applying the inverse QFT, we obtain 
+\begin{align*}
+(U_{QFT})^{-1}\left(\frac{1}{2^{m/2}} \sum_{k\in\{0,1\}^m} e^{2\pi i \theta k}\ee_k\right) &= \frac{1}{2^{m}} \sum_{k\in\{0,1\}^m}\sum_{j\in\{0,1\}^m} e^{2\pi i \theta k}\cdot e^{-2\pi ijk/2^m } \ee_j \\
+&=  \sum_{j\in\{0,1\}^m} \left(\frac{1}{2^{m}} \sum_{k\in\{0,1\}^m} e^{2\pi ik (\theta - j/2^m)} \ee_j \right)
+\end{align*}
+Then the probability $p_j$ of measuring $\ee_j$ is 
+$$p_j = \left| \frac{1}{2^{m}} \sum_{k\in\{0,1\}^m} e^{2\pi ik (\theta - j/2^m)} \right|^2$$
+which, using the formula for a geometric series, simplifies to 
+$$p_j = \frac{1}{2^{2m}} \cdot \left| \frac{e^{2\pi i(2^m\theta -j)}-1}{e^{2\pi i(\theta-j/2^m)}-1} \right|.$$
+As we have already shown, this probability is $1$ when $\theta = \frac{j}{2^m}$. What is the probability of the next best scenario, in which $\theta = \frac{j}{2^m}+\varepsilon$ for $|\varepsilon| < \frac{1}{2^{m+1}}$? We may attempt to bound $p_j$. 
+
+To get a lower bound, note that 
+\begin{align*}
+|e^{2\pi i(2^m\theta -j)}-1| = |e^{2\pi i(2^m\varepsilon)}-1|
+&\ge \frac{2}{\pi} \left|2\pi i (2^m\varepsilon)\right| 
+\end{align*}
+since the ratio of the length of the chord to the length of the arc joining two points on the unit circle is at least $\frac{2}{\pi}$. Then we have $$|e^{2\pi i(2^m\theta -j)}-1| \ge 4\cdot 2^m|\varepsilon|.$$
+Bounding the denominator of the fraction, we have that 
+\begin{align*}
+|e^{2\pi i \varepsilon}-1| \le |2\pi i \varepsilon| 
+\end{align*}
+since the length of a chord is always less than or equal to the length of the corresponding arc on a unit circle. Then we must have 
+\begin{align*}
+p_j &= \frac{1}{2^{2m}} \cdot \left| \frac{e^{2\pi i(2^m\theta -j)}-1}{e^{2\pi i(\theta-j/2^m)}-1} \right|^2 \\
+&\ge \frac{1}{2^{2m}}\cdot \left(\frac{4\cdot 2^m|\varepsilon|}{2\pi |\varepsilon|}\right)^2 \\
+& = \frac{4}{\pi^2} > 0.4.
+\end{align*}
+In other words, there is a better than 40\% chance that the measurement is completely accurate to $m$ bits of precision, which is reasonably good. Moreover, we may use similar techniques to demonstrate that the probability of obtaining a result corresponding to $\frac{\alpha}{2^m} \le \varepsilon \le \frac{1}{2}$ is $\frac{1}{4\alpha^2}$, and thus, it is very unlikely that we will obtain highly inaccurate measurements. If we want to be certain that we obtain the best estimate to $\theta$ that is precise to $m$-bits, we may run the algorithm several times using precision up to $m+2$-bits; then the probability that the first $m$ bits will be accurate on each trial is quite high, and by taking the most commonly appearing string of the bits and then rounding to the first $m$ bits, we will approach the true approximation exponentially fast. It is also significant that we do not need multiple copies of the eigenvector $\vv$ to run the procedure multiple times $-$ we already showed above that our circuit will return $\vv$ in the bottom system of qubits, and we can simply feed this vector into the circuit again. Thus, phase estimation can be performed fairly accurately.
+
+\subsection{Implementing the Quantum Fourier Transform}
+
+As noted above, an efficient implementation of the quantum Fourier transform is key. Attempting to compute the transform of an $n$-qubit state by pure matrix multiplication would seem to require $(2^n)^2$ multiplications, which is prohibitively slow. Fortunately, we claim that we may factor QFT as a pure tensor product. If $k\in\{0,1\}^n$ where $k = k_1\ldots k_n$ and $\omega_N = e^{2\pi i/2^n}$, then \begin{align*}
+(U_{QFT})^{-1}(\ee_j) &= \frac{1}{2^{n/2}} \sum_{k\in\{0,1\}^n} \omega_N^{-jk}\ee_k \\
+&= \frac{1}{2^{n/2}}\sum_{k\in\{0,1\}^n} \omega_N^{-j\sum_{r=1}^n 2^{n-r}k_r}\ee_k \\
+&= \frac{1}{2^{n/2}}\sum_{k\in\{0,1\}^n} \bigotimes_{r=1}^n \omega_N^{-j 2^{n-r}k_r}\ee_{k_r} \\
+&= \frac{1}{2^{n/2}}  \bigotimes_{r=1}^n \sum_{k_r\in\{0,1\}} \omega_N^{-j 2^{n-r}k_r}\ee_{k_r} \\
+&= \frac{1}{2^{n/2}}  \bigotimes_{r=1}^n \left( \ee_0 + \omega_N^{-j2^{n-r}}\ee_1 \right) \\
+&= \frac{1}{2^{n/2}}  \bigotimes_{r=1}^n \left( \ee_0 + e^{-2\pi ij2^{-r}}\ee_1 \right)
+\end{align*}
+Now if $j=j_1\ldots j_n$, note 
+\begin{align*}
+\exp(-2\pi i j 2^{-r}) &= \exp\left(-2\pi i \sum_{l=1}^n \frac{2^{n-l}j_l}{2^r}\right)  \\
+&= \exp \left(-2\pi i \sum_{l=1}^n 2^{n-r-l}j_l\right) \\
+&= \exp ( -2\pi i (0.j_{n-r+1}\ldots j_{n}))
+\end{align*}
+where the last simplification follows from noting that $\exp(-2\pi ik) = 1$ for any integer $k$.
+Then plugging back in, we obtain $$(U_{QFT})^{-1}(\ee_j) = \frac{1}{2^{n/2}}  \bigotimes_{r=1}^n \left( \ee_0 + \exp ( -2\pi i (0.j_{n-r+1}\ldots j_{n}))\,\ee_1 \right) $$ which may also be written as $$\frac{1}{2^{n/2}}\left( \ee_0 + \exp ( -2\pi i (0.j_{n}))\,\ee_1 \right)\otimes \left( \ee_0 + \exp ( -2\pi i (0.j_{n-1}j_n))\,\ee_1 \right)\otimes \dots\otimes \left( \ee_0 + \exp ( -2\pi i (0.j_1\ldots j_n))\,\ee_1 \right).$$
+Thus we have factored the QFT as a product of pure tensors. We claim this will allow us to write down a circuit that will compute the QFT with few gates. If we define the controlled rotation gate $$R_s = \begin{bmatrix}
+1 & 0 \\
+0 & \exp(-2\pi i/2^s)
+\end{bmatrix}$$
+then we claim the following circuit, defined recursively based on the number of qubits, correctly implements the QFT:
+
+\begin{figure}[h]
+\centering
+\mbox{
+\Qcircuit @C=1em @R=.7em {
+\lstick {\ee_{j_1}} & \gate{H} & \gate{R_2} & \qw& \dots && \gate{R_n} &  \qw & \qw \\
+\lstick{\ee_{j_2}}  & \qw & \ctrl{-1} & \qw & \dots && \qw & \multigate{2}{QFT_{2^{n-1}}} & \qw\\
+\lstick{\vdots} & \qw & \qw & \qw & \qw & \qw & \qw  & \ghost{QFT_{2^{n-1}}} & \qw \\
+\lstick{\ee_{j_n}} & \qw & \qw & \qw & \qw & \qw & \ctrl{-3} & \ghost{QFT_{2^{n-1}}} & \qw  
+}
+}
+\end{figure}
+For the base case, the above circuit executed for only one qubit is simply a Hadamard gate. Checking, we see that for one qubit, the QFT is $\ee_0+e^{-2\pi i0.j_1}\ee_1$, which is exactly the result the Hadamard gate gives us. 
+
+Then assuming that the QFT works for $n-1$ qubits, we see that in the above circuit, $$\ee_{j_1}\otimes\dots\otimes\ee_{j_n}$$ is taken to $$(\ee_0+e^{-2\pi i\cdot 0.j_1}\ee_1)\otimes\ee_{j_2}\otimes\dots\otimes\ee_{j_n}$$
+by the Hadamard gate, followed by $$(\ee_0+e^{-2\pi i\cdot 0.j_1j_2}\ee_1)\otimes\ee_{j_2}\otimes\dots\otimes\ee_{j_n}$$
+and so on until we obtain $$(\ee_0+e^{-2\pi i\cdot 0.j_1\ldots j_n}\ee_1)\otimes\ee_{j_2}\otimes\dots\otimes\ee_{j_n},$$ which is then inputted into the recursively defined $QFT_{2^n-1}$ to obtain 
+$$(\ee_0+e^{-2\pi i\cdot 0.j_1\ldots j_n}\ee_1)\otimes(\ee_0+e^{-2\pi i \cdot 0.j_2\ldots j_n}\ee_1)\otimes\dots\otimes(\ee_0+e^{-2\pi i 0.j_n}\ee_1)$$
+which is essentially the desired result; inputting some swap gates at the end of this circuit gives us what we want.
+
+Notice that this circuit takes $1$ gate for 1 qubit, and satisfies the recurrence relation $$O(n) = n+O(n-1).$$ Therefore, it takes $O(n^2)$ gates to implement QFT where $n$ is the number of qubits, which is far more efficient than the $2^{2n}$ we would obtain by computing the QFT naively.
+
+\section{Shor's Algorithm}
+
+Quantum computing evolved from a minor research area into a national priority primarily because of Shor's discovery that a theoretical quantum computer could factor large numbers in polynomial time. This was of huge concern because factoring large numbers has long been assumed to be a computationally hard problem; even the best known classical algorithms only run in exponential time. Correspondingly, many current public key encryption schemes, most notably, RSA encryption, rely on the difficulty of factoring. Thus, if Shor's algorithm is ever effectively implemented, it will have very real ramifications for the field of cryptography.
+
+The specific steps for factoring $N$ can be laid out as follows:
+
+\begin{enumerate}
+\item Pick an arbitrary integer $x<N$ and compute $\gcd(x,N)$. We can do this in roughly $\log N$ time classically using the Euclidean algorithm. If the $\gcd$ is not equal to $1$, then we have found a divisor of $N$. Otherwise, $\gcd(x,N)=1$, and we proceed to the next step.
+\item For each $x<N$, there exists a smallest positive integer $r$ such that $x^r\equiv 1\pmod{N}$, which we call the \textit{order} of $x$ mod $N$. Compute the order $r$ using quantum circuits.
+\item Compute $\gcd(x^{r/2}-1, N)$. If $x$ turns out to be ``good'' as we will define it later, then this $\gcd$ will be a nontrivial divisor of $N$. 
+\item Divide $N$ by the divisor we have found and repeat as necessary.
+\end{enumerate}
+
+Before we get into the details of how to carry out each specific step, note that quantum circuits only come into play for finding the order of $x\bmod{N}$. The main reason Shor's algorithm is so much faster than classical techniques is because the quantum Fourier transform can be implemented efficiently, as explained the last section. While the specific details of how the algorithm is implemented are important, the main point is this: the discrete Fourier transform would take $O(N^2)$ time classically, which we could improve to $O(N\log N)$ time with the Fast Fourier transform, but the QFT takes closer to $O((\log N)^2)$ time. This algorithm is plausible with a quantum computer but not with a classical computer precisely because QFT is fast.
+
+\subsection{Reduction to Order Finding}
+
+In broad terms, Shor's algorithm works by turning the factoring problem into an order finding problem. We will explain what this means.
+
+Let $\ZZ_N$ denote the integers modulo $N$, namely, $\{0,\ldots,N-1\}$. Define $\ZZ_N^*$ by $$\ZZ_N^* = \{x\in \ZZ_N \mid \gcd(x,N) = 1\}.$$ It is well known that $\ZZ_N^*$ is a group under multiplication. Now consider an arbitrary $x\pmod{N}$. By a theorem proved by Euler, which also happens to be a special case of Lagrange's Theorem, we have that for some integer $r$ such that $r \mid \varphi(N)$, $r$ is the smallest integer such that $$x^r \equiv 1\pmod{N}.$$ We call this $r$ the order of $x$ mod $n$. 
+
+Now we define a ``good'' residue $x\in\ZZ_N^*$ as any residue satisfying the following conditions: 
+\begin{itemize}
+\item The order of $x$ mod $N$, call it $r$, is even.
+\item When we factor $x^r-1 = (x^{r/2}-1)(x^{r/2}+1) \equiv 0 \pmod{N}$, neither of the factors is equal to $0\pmod{N}$.   
+\end{itemize}
+In fact, we know that $x^{r/2}-1\not\equiv 0\pmod{N}$ since $r$ is the smallest integer with $x^r\equiv 1\pmod{N}$ by definition. Thus, we only need $x^{r/2}\not\equiv -1\pmod{N}$. Notice that this second condition ensures that if $x$ is good, $x^{r/2}-1$ and $x^{r/2}+1$ must be nontrivial factors of $N$. Thus, the factoring problem can be considered an order finding problem in this way: if we pick a good residue $x$ and compute the order $r$, then $x^{r/2}-1$ is a factor of $N$. 
+
+\subsubsection{Finding Good Residues}
+
+In order for Shor's algorithm to work, we want there to be a reasonably large number of good residues. As we will show in this section, the number of good residues is always at least $\frac{3}{8}N$ when $N$ is not a prime power.
+
+Suppose $N= p$ for some odd prime $p$. Then let $2^m$ be the largest power of $2$ such that $2^m\mid N-1$. Clearly $m\ge 1$ since $p$ is odd. Furthermore, it is known that $\ZZ_p^*$ is a cyclic group, and thus for some generator $g$, every element of $\ZZ_p^*$ may be written $g^t$ for some $t\in\{1,\ldots, p-1\}$.  Now take $g^{t_0}$ for some odd $t_0$, and let $r_0$ be the order of $g^{t_0}$ mod $p$. Then we have $g^{t_0r_0}\equiv 1\pmod{p}$ and so 
+\begin{align*}
+\text{ord}_p (g) \mid t_0r_0 &\Rightarrow p-1\mid t_0r_0 \\
+&\Rightarrow 2^m \mid r_0
+\end{align*} 
+where we have used that $\text{ord}_p (g) = p-1$ since $g$ is a generator, and that $t_0$ is odd. However, since exactly half of the $t$ are odd, we have that at least half of the $g^t$ have even order.
+
+If $N=p^k$ for some odd prime $p$ and integer $k$, we still have that $\ZZ_N^*$ is a cyclic group, and so the same argument holds to show that half of the residues in $\ZZ_N^*$ have even order.
+
+Now consider the general case $N=p_1^{a_1}\cdot\dots\cdot p_j^{a_j}$. Notice $\ZZ_N^*$ is in natural bijection $\ZZ_{p_1^{a_1}}^*\times\dots\times \ZZ_{p_j^{a_j}}^*$. Let $x\in \ZZ_N^*$ correspond to $(x_1,\ldots,x_j)$ and suppose each of the $x_i$ has order $r_i$. Moreover, let $d_i$ be the largest integer such that $2^{d_i} \mid r_i$. Then the order $r$ of $x$ is equal to $\text{lcm}(r_1,\ldots,r_j)$. Then $r$ is odd if and only if $r_i$ is odd for all $i$ and so the probability that $r$ is even is at least $1-\frac{1}{2^j}$. 
+
+Now given that $r$ is even, we want the probability that $x$ is not a good residue, which means $x^{r/2}\equiv -1\pmod{N}$. We must have $x_i^{r/2} \equiv -1 \pmod{p_i^{a_i}}$, and so for each $x_i$, we have $r_i\nmid \frac{r}{2}$. Then we must have that all the $d_i$ are equal, since if $d_k>d_l$ for some $l$ and $k$, then we must have $r_l\mid\frac{r}{2}$. The probability of all $d_i$ being equal is at most $\frac{1}{2^{j-1}}$. Therefore, the probability that we have a good residue is at least $$\left(1-\frac{1}{2^j}\right)\left(1-\frac{1}{2^{j-1}}\right) $$
+where $j$ is the number of distinct primes dividing $N$. Thus, if $N$ has exactly two prime factors, there are at least $\frac{3}{8}N$ good residues. This lower bound can be increased to $1-\frac{1}{2^{j-1}}$ as others such as \cite{watrous06} have noted. However, the point is clear: when $N$ has at least two prime factors,  the odds of a randomly chosen residue being good are quite high.
+
+There is only one other case to be considered: when $N$ is a power of a prime. However, fast classical techniques can be found for this case\footnote{See \cite{bacon06} for details.}.
+
+\subsection{Order Finding}
+
+To make this algorithm work, we need to be able to compute orders efficiently. To this end, let $N$ be the number we are trying to factor, and let $a$ be the residue we are trying to compute the order of. Then let $U_a$ be the unitary matrix on $n$ qubits, where $n=\lfloor \log_2 N\rfloor +1$, such that $U_a(\ee_k) = \ee_{a\cdot k\mod{N}}$ for each $0\le k < N$.  This does not necessarily define $U_a$ on every input, but it does not really matter. For simplicity, we may let $U_a(\ee_k) = \ee_k$ for any $N\le k\le 2^{n}-1$.
+
+It turns out that if we subject $U_a$ to phase estimation, this will allow us to solve the order-finding problem. First, we need to check that we can implement $\Lambda_m(U_a)$ efficiently. It turns out we can because there exists an efficient classical algorithm for performing this: repeated squaring. In order to compute $x^k\pmod{N}$, we may let $k=k_1\ldots k_j$ in binary and repeatedly square to compute $\{x\bmod{N},x^2\bmod{N},\ldots,x^{2^j}\bmod{N}\}$. Then we may use these to compute $x^k\pmod N$. This will take roughly $\log k$ time. Since there is an efficient classical algorithm there is also a corresponding efficient quantum gate $U_a$ to perform this operation. Thus, we may efficiently implement a gate such that $$\Lambda_m(U_a)(\ee_j\otimes \ee_k) = \ee_j\otimes  \ee_{a^jk\pmod{N}}$$
+What are the eigenvalues and eigenvectors of $U_a$? We claim the eigenvectors are of the form $$\vv_j = \frac{1}{\sqrt{r}}\left(\ee_1 + \omega_r^{-j}\ee_a + \omega_r^{-2j}\ee_{a^2}+\ldots+\omega_r^{-j(r-1)}\ee_{a^{r-1}}\right)$$ for $0\le j < 2^n$, where $r$ is the order of $a$ mod $N$ and the $a^l$ are all taken mod $N$. Then the eigenvalue corresponding to the eigenvector $\vv_j$ is $\omega_r^{j}$. We can check this by direct computation:
+\begin{align*}
+U_a(\vv_j) &= \frac{1}{\sqrt{r}}\left(\ee_a + \omega_r^{-j}\ee_{a^2} + \omega_r^{-2j}\ee_{a^3}+\ldots+\omega_r^{-j(r-1)}\ee_{1}\right) \\
+&= \omega_r^j \vv_j.
+\end{align*}
+To see how phase estimation will help us find $r$, suppose we had the eigenvector $\vv_1$. We may input it into the phase estimation procedure with $m$-bit precision: 
+\begin{figure}[h]
+\centering
+\mbox{
+\Qcircuit @C=1em @R=.7em {
+\lstick {\ee_{0\dots 0}} & \gate{H^{\otimes m}} & \multigate{1}{\Lambda_{m}(U_a)} & \gate{(QFT_{2^m})^{-1}} & \meter  \\
+\lstick{\vv_1}  & \qw & \ghost{\Lambda_{m}(U_a)} & \qw\\
+}
+}
+\end{figure}
+
+We would obtain an approximation $\frac{h}{2^m}$ to the order, $\frac{1}{r}$. Intuitively, then, to compute $r$, we would simply compute $\frac{2^m}{h}$, or, accounting for rounding, we would want $\left\lfloor\frac{2^m}{h}+\frac{1}{2}\right\rfloor$. However, we need to determine how many bits of precision we need in order to be sure this evaluates to the correct value of $r$. Intuitively, we need $$\left| \frac{2^m}{h} - \frac{1}{r} \right| < \frac{1}{r(r+1)}$$ because this is the distance between $\frac{1}{r}$ and $\frac{1}{r+1}$. Noting that $r<N$, we approximately need $$\frac{h}{2^m} = \frac{1}{r}-\varepsilon$$ for $|\varepsilon| < \frac{1}{2N^2}$. Plugging in, we see that this is sufficient:
+$$\left| \frac{2^m}{h} - r \right|  = \left| \frac{1}{\frac{1}{r}-\varepsilon} - r \right| = \left| \frac{r^2\varepsilon}{1-r\varepsilon} \right| \le \left| \frac{r^2\frac{1}{2N^2}}{1-r\frac{1}{2N^2}} \right| = \frac{r^2}{2N^2-r} \le \frac{(N-1)^2}{2N^2-N} < \frac{1}{2}.$$
+Thus, we want $\left|\frac{h}{2^m}-\frac{1}{r}\right| < \frac{1}{2N^2}$, and to obtain this level of precision we may run the phase estimation procedure for $m=2n$ where $n$ is the number of qubits.
+
+Therefore, we see that if we may obtain the eigenvector $\vv_1$, we may find $r$. However, it is difficult to see how we could obtain any particular eigenvector $\vv_j$. Luckily, we do not need to, as we may observe that 
+\begin{align*}
+\frac{1}{\sqrt{r}} \sum_{j=0}^{r-1} \vv_j &= \frac{1}{\sqrt{r}} \sum_{j=0}^{r-1} \sum_{k=0}^{r-1} \frac{1}{\sqrt{r}}\left(\omega_r^{-jk}\ee_{a^k}\right) \\
+&= \frac{1}{r} \sum_{k=0}^{r-1} \sum_{j=0}^{r-1} \left(\omega_r^{-jk}\ee_{a^k}\right) \\
+&= \frac{1}{r} \sum_{k=0}^{r-1} \frac{\omega_r^{-kr}-1}{\omega_r^{-k}-1} \ee_{a^k} \\ 
+&= \ee_1
+\end{align*}
+since all terms except for the $k=0$ term vanish. Then since the $\vv_j$ are orthonormal (we may check this easily), running the phase estimation procedure on the state $\ee_1$ and then measuring the result to cause it to collapse to a specific eigenstate is equivalent to running phase estimation on some $\vv_k$ chosen uniformly at random from $\{\vv_0,\ldots,\vv_{r-1}\}$. Therefore, if we run the phase estimation procedure on $\ee_1$, we will obtain an estimate $$\frac{j}{2^m}\approx \frac{k}{r}$$ for some unknown $k$. This will not give us $r$ immediately, but by running a ``continued fraction algorithm''\footnote{See \cite{bacon06} for more detail.} which can be implemented in $\log^3(n)$ time, we may obtain a fraction $\frac{x}{y}$ that is a good approximation for $\frac{k}{r}$ in lowest terms. Running the phase estimation procedure on $\ee_1$ several times, we will obtain several values of $k$. Correspondingly, we will obtain several different $y$'s, and from these, will be able to obtain $r$ as the least common multiple of these $y$'s with high probability. 
+
+\subsection{Finishing Touches}
+
+Let us consider the broad picture of Shor's algorithm once more to see how these pieces tie together. First, we pick a integer $x < N$. If $\gcd(x,N)\neq 1$ then we already have a divisor of $N$ and we may compute $N/x$ and start the procedure again on $N/x$. Otherwise, we continue. We may compute the order $r$ of $x\pmod{N}$ as outlined above. Then if $x$ turns out to be ``good,'' which is true with reasonably high probability as long as $N$ is not a prime power, we can compute $\gcd(x^{r/2}-1,N)$ and this will be a nontrivial divisor of $N$. Then we may divide $N$ by this divisor and repeat this process as necessary until we have a factorization of $N$. Overall, the runtime of this can be bounded by $O((\log N)^3)$.\footnote{If we are extremely attentive to detail, we can actually reduce this to $O((\log N)^2(\log\log N )(\log\log\log N))$, per Wikipedia.}
+
+\subsection{Reflections}
+
+Again, the crux of Shor's algorithm is that the QFT can be implemented much faster than classical analogues, and this allows quantum computers to factor much more efficiently than classical computers. This idea of using the QFT to compute orders is actually a more general method used in quantum computing.
+
+While Shor's algorithm is an astonishing theoretical result, it is unclear what its practical implications will be. As of 2018, the largest number that is known to have been factored with Shor's algorithm is 21, which was achieved in 2012. However, other quantum algorithms have factored much larger numbers, up to 56153. Still, many question how effective these quantum algorithms will ultimately be, as the physical qubits used in the computations are highly sensitive, and as the number of qubits increases, so does the decoherence. It may be many more years until the search for effective quantum computers is resolved.
+
+
+\nocite{*}
+\bibliographystyle{alpha}
+\bibliography{sample}
+
+\end{document}
